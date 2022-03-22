@@ -221,6 +221,12 @@ namespace quic
            
         }
 
+        static NAN_METHOD(close)
+        {
+           Http3WTSessionVisitor *obj = Nan::ObjectWrap::Unwrap<Http3WTSessionVisitor>(info.Holder());
+           std::function<void()> task = [obj]() { obj->session_->CloseSession(0,"manual close"); };
+           obj->server_->Schedule(task);
+        }        
 
         uint32_t getObjNum() { return objnum_;}
 

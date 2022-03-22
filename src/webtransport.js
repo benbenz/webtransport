@@ -8,9 +8,9 @@ import { ReadableStream, WritableStream } from 'node:stream/web'
 
 const require = createRequire(import.meta.url)
 let wtpath = '../build/Release/webtransport.node'
-if (process.env.NODE_ENV !== 'production') {
-  wtpath = '../build/Debug/webtransport.node'
-}
+// if (process.env.NODE_ENV !== 'production') {
+//   wtpath = '../build/Debug/webtransport.node'
+// }
 const wtrouter = require(wtpath)
 
 class Http3WTStream {
@@ -174,6 +174,13 @@ class Http3WTSession {
   onReady(error) {
     if (this.readyResolve) this.readyResolve()
     delete this.readyResolve
+  }
+
+  close() {
+    if(this.objint) {
+      this.objint.close() ;
+      //this.onClose(0,"self closing") ;
+    }
   }
 
   onClose(errorcode, error) {
@@ -344,7 +351,11 @@ export class Http3Server {
             const visitor = this.visitors[args.id]
             if (visitor && args.streamid && args.id) {
               visitor.onStreamClosed(args)
-            } else throw new Error('Malformed StreamClosed')
+            } else {
+              if(!visitor) // temp fix
+                return ;
+              throw new Error('Malformed StreamClosed')
+            }
           }
           break
         case 'StreamRead':
